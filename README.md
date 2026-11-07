@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stayro Owner Portal (Phase 1)
 
-## Getting Started
+Owner-facing portal for [Stayro](https://stayro.com/) — list units, upload photos, manage payouts (IBAN), and admin approval. Built with **Next.js 15**, **MongoDB / Mongoose**, **Auth.js**, and **next-intl** (Arabic RTL default + English).
 
-First, run the development server:
+## Features
+
+- Owner registration / login (email + password), email verification & password reset
+- Multi-step Airbnb-style unit wizard (type, map location, details, amenities, photos, pricing, rules)
+- Photos stored in **MongoDB GridFS** (resized with `sharp`)
+- Availability calendar (block / unblock dates)
+- Payouts: Saudi IBAN methods, earnings ledger, payout requests via **mock gateway** (`PAYOUT_PROVIDER`)
+- Owner profile & ID verification
+- Admin panel: approve/reject units & owners, add earnings, process payouts
+- Stayro brand identity (Tajawal, orange primary, license footer)
+
+## Prerequisites
+
+- Node.js 20+
+- MongoDB running locally (or a connection string)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# macOS with Homebrew
+brew services start mongodb-community
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Setup
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+cp .env.example .env.local
+npm install
+npm run seed
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Open [http://localhost:3000](http://localhost:3000) — you'll be redirected to `/ar`.
 
-## Learn More
+### Seed accounts
 
-To learn more about Next.js, take a look at the following resources:
+| Role  | Email              | Password       |
+|-------|--------------------|----------------|
+| Admin | admin@stayro.com   | Password123!   |
+| Owner | owner@stayro.com   | Password123!   |
+| Owner | host@stayro.com    | Password123!   |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`npm run seed` creates **8 sample units** across statuses (`published`, `pending_review`, `draft`, `rejected`, `unlisted`) with GridFS cover photos, payout methods, and earnings.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Scripts
 
-## Deploy on Vercel
+| Command        | Description                |
+|----------------|----------------------------|
+| `npm run dev`  | Development server         |
+| `npm run build`| Production build           |
+| `npm run start`| Start production server    |
+| `npm run seed` | Reset DB and seed sample data |
+| `npm run lint` | ESLint                     |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/[locale]/          # Public, dashboard, admin pages
+  app/api/               # Auth, photo stream, photo upload
+  components/            # UI, layout, wizard, payouts, admin
+  lib/                   # db, auth, gridfs, payouts, actions
+  models/                # Mongoose models
+  messages/              # ar.json / en.json
+```
+
+## Payments
+
+Payouts use a provider interface (`src/lib/payouts`). Phase 1 ships with `mock`. Set `PAYOUT_PROVIDER=mock` and swap in Moyasar/Tap/HyperPay later without changing UI code.
+
+## License note
+
+Footer displays Ministry of Tourism license **73104535** to match stayro.com.
+# stayroWeb
